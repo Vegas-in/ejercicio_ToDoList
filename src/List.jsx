@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import TodoList from './TodoList'
 import data from "./data";
+
+
 
 function List() {
 
@@ -8,6 +10,10 @@ function List() {
     const [values, setValues] = useState({
         title: ""
       })
+    const [timer, setTimer] = useState(null);
+    const [addMsg, setAddMsg] = useState(false)
+
+    const titleRef = useRef(null);
 
     const paintTask = () => {
         return list.map((item, index) => (<TodoList
@@ -18,25 +24,43 @@ function List() {
         ))
     };
 
+    const paintMsg = () => {
+        setAddMsg(true);
+        setTimeout(() => {
+            setAddMsg(false)
+        }, 5000);
+    }
+
     const createTask = (e) => {
         e.preventDefault();
         
         const task = e.target.title.value;
-        console.log(task);
-        
+
         const item = { task }; // Nuevo objeto destino
         setList([...list, item]); // Añade el nuevo destino a la lista
-        e.target.reset()
+
+        
+        paintMsg();
+
+
+        e.target.reset();
     }
-      
+    
+    let clearInput = () => {
+        titleRef.current.value = "";
+        setValues({title: ""})
+    }; 
 
     const handleChange = (e) => {
-        console.log(e.target.name, e.target.value);
         setValues({
-          ...values,
+          /* ...values, */
           [e.target.name]: e.target.value
-      })
-      }
+        })
+        if (timer) {
+            clearTimeout(timer)
+        }
+        setTimer(setTimeout(clearInput, 5000))
+    };
 
     const clearTasks = () => setList([]);
 
@@ -55,9 +79,13 @@ function List() {
             <form onSubmit={createTask}>
                 <label htmlFor="name">Introduce nueva tarea pendiente</label>
                 <br />
-                <input type="text" name="title" onChange={handleChange}/>
+                <input type="text" name="title" pattern=".{6,}" onChange={handleChange} ref={titleRef}/>
+                <br />
+                {addMsg == true ? <div >TAREA AÑADIDAAA!!</div> : <></>}
                 <br />
                 {values.title ? <button type="submit">ADD</button> : null}
+                <br />
+                {values.title.length > 0 && values.title.length < 6 ? <div>Error! introduzca al menos 6 caracteres please!</div> : <></>}
                 <br />
             </form>
             <button onClick={clearTasks}>CLEAR</button>
